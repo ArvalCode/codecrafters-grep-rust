@@ -13,9 +13,6 @@ fn match_pattern(input_line: &str, pattern: &str) -> bool {
         let mut new_pattern = pattern.trim_matches('[').trim_matches(']').bytes();
         return input_line.bytes().any(|val| new_pattern.any(|p| val == p));
     } else if pattern.starts_with("[^") && pattern.ends_with(']') {
-        let chars_to_exclude: String = pattern[2..pattern.len()-1].to_string();
-        let exclude_chars: std::collections::HashSet<char> = chars_to_exclude.chars().collect();
-        input_line.chars().any(|c| !exclude_chars.contains(&c))
         } 
      else {
         panic!("Unhandled pattern: {}", pattern)
