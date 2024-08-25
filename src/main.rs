@@ -13,9 +13,9 @@ fn match_pattern(input_line: &str, pattern: &str) -> bool {
         let mut new_pattern = pattern.trim_matches('[').trim_matches(']').bytes();
         return input_line.bytes().any(|val| new_pattern.any(|p| val == p))
     } else if pattern.starts_with("[^") && pattern.ends_with(']') {
-        return !input_line.bytes().any(|val| new_pattern.any(|p| val == p))
-    }
-    else {
+        let mut new_pattern = pattern.trim_matches('[').trim_matches(']').bytes();
+        return input_line.bytes().all(|val| !new_pattern.any(|p| val == p))
+    } else {
         panic!("Unhandled pattern: {}", pattern)
     }
 }
