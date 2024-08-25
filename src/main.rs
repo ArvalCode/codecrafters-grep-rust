@@ -15,12 +15,7 @@ fn match_pattern(input_line: &str, pattern: &str) -> bool {
     } else if pattern.starts_with("[^") && pattern.ends_with(']') {
         // Extract the characters excluded by the pattern
         let cuttern = &pattern[2..pattern.len() - 1];
-        let result = !input_line.chars().any(|c| cuttern.contains(c));
-        if result {
-            return false;
-        } else {
-            return true;
-        }
+        result = !input_line.chars().any(|c| cuttern.contains(c));
     }
      else {
         panic!("Unhandled pattern: {}", pattern)
