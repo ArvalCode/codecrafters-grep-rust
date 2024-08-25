@@ -17,9 +17,9 @@ fn match_pattern(input_line: &str, pattern: &str) -> bool {
         let cuttern = &pattern[2..pattern.len() - 1];
         let result = !input_line.chars().any(|c| cuttern.contains(c));
         if result {
-            return 0;
+            return false;
         } else {
-            return 1;
+            return true;
         }
     }
      else {
