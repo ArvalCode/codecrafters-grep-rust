@@ -9,6 +9,9 @@ fn match_pattern(input_line: &str, pattern: &str) -> bool {
         return input_line.contains(|c: char| c.is_digit(10));
     } else if pattern == "\\w" {
         return input_line.contains(|c: char | c.is_alphanumeric());
+    } else if pattern.starts_with('[') && pattern.ends_with(']') {
+        let new mut new_pattern = pattern.trim_matches('[').trim_matches(']').bytes();
+        return input_line.contains(|c: char| new_pattern.contains(c));{
     } else {
         panic!("Unhandled pattern: {}", pattern)
     }
