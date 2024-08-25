@@ -13,9 +13,16 @@ fn match_pattern(input_line: &str, pattern: &str) -> bool {
         let mut new_pattern = pattern.trim_matches('[').trim_matches(']').bytes();
         return input_line.bytes().any(|val| new_pattern.any(|p| val == p))
     } else if pattern.starts_with("[^") && pattern.ends_with(']') {
-        let mut new_pattern = pattern.trim_matches('[').trim_matches(']').bytes();
-        return input_line.bytes().all(|val| !new_pattern.any(|p| val == p))
-    } else {
+        // Extract the characters excluded by the pattern
+        let cuttern = &pattern[2..pattern.len() - 1];
+        let result = !input_line.chars().any(|c| cuttern.contains(c));
+        if result {
+            std::process::exit(0);
+        } else {
+            std::process::exit(1);
+        }
+    }
+     else {
         panic!("Unhandled pattern: {}", pattern)
     }
 }
