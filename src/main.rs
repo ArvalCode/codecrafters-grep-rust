@@ -17,9 +17,9 @@ fn match_pattern(input_line: &str, pattern: &str) -> bool {
         let cuttern = &pattern[2..pattern.len() - 1];
         let result = !input_line.chars().any(|c| cuttern.contains(c));
         if result {
-            std::process::exit(1);
+            return 0;
         } else {
-            std::process::exit(0);
+            return 1;
         }
     }
      else {
