@@ -18,8 +18,7 @@ fn match_pattern(input_line: &str, pattern: &str) -> bool {
             
             // Return true if none of the input line's characters are in the exclude set
             !input_line.chars().any(|c| exclude_chars.contains(&c))
-        }
-    } 
+        } 
      else {
         panic!("Unhandled pattern: {}", pattern)
     }
