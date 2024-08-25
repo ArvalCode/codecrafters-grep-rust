@@ -13,7 +13,6 @@ fn match_pattern(input_line: &str, pattern: &str) -> bool {
         let mut new_pattern = pattern.trim_matches('[').trim_matches(']').bytes();
         return input_line.bytes().any(|val| new_pattern.any(|p| val == p))
     } else if pattern.starts_with("[^") && pattern.ends_with(']') {
-        // Extract the characters excluded by the pattern
         let cuttern = &pattern[2..pattern.len() - 1];
         return !input_line.chars().any(|c| cuttern.contains(c));
     }
