@@ -1,6 +1,7 @@
 use std::env;
 use std::io;
 use std::process;
+use std::collections::HashSet;
 
 fn match_pattern(input_line: &str, pattern: &str) -> bool {
     if pattern.chars().count() == 1 {
