@@ -3,7 +3,7 @@ use std::io;
 use std::process;
 use std::str::Chars;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)] // Derive PartialEq for pattern matching
 enum Pattern {
     Literal(char),
     Digit,
@@ -39,46 +39,75 @@ fn match_pattern(input_line: &str, pattern: &str) -> bool {
     let patterns = build_patterns(pattern);
     let input_line = input_line.trim_matches('\n');
 
+    // Check if the pattern starts with the `^` anchor
+    let starts_with_anchor = patterns.first() == Some(&Pattern::StartOfLine);
+
     let mut iter = input_line.chars();
-    let mut start_of_line = false;
-
-    'input_iter: for i in 0..input_line.len() {
-        if patterns.first() == Some(&Pattern::StartOfLine) {
-            start_of_line = true;
-        }
-
-        if start_of_line && i == 0 {
-            // Check if the input starts with the pattern
-            let input = &input_line[i..];
-            let mut iter = input.chars();
-            for pattern in patterns.iter().skip(1) {
-                match pattern {
-                    Pattern::Literal(l) => {
-                        if !match_literal(&mut iter, *l) {
-                            continue 'input_iter;
-                        }
+    
+    if starts_with_anchor {
+        // If pattern starts with `^`, match the input from the beginning
+        let input = &input_line[..];
+        let mut input_iter = input.chars();
+        for pattern in patterns.iter().skip(1) {
+            match pattern {
+                Pattern::Literal(l) => {
+                    if !match_literal(&mut input_iter, *l) {
+                        return false;
                     }
-                    Pattern::Digit => {
-                        if !match_digit(&mut iter) {
-                            continue 'input_iter;
-                        }
-                    }
-                    Pattern::Alphanumeric => {
-                        if !match_alphanumeric(&mut iter) {
-                            continue 'input_iter;
-                        }
-                    }
-                    Pattern::Group(positive, group) => {
-                        if match_group(&mut iter, group) != *positive {
-                            continue 'input_iter;
-                        }
-                    }
-                    _ => (),
                 }
+                Pattern::Digit => {
+                    if !match_digit(&mut input_iter) {
+                        return false;
+                    }
+                }
+                Pattern::Alphanumeric => {
+                    if !match_alphanumeric(&mut input_iter) {
+                        return false;
+                    }
+                }
+                Pattern::Group(positive, group) => {
+                    if match_group(&mut input_iter, group) != *positive {
+                        return false;
+                    }
+                }
+                _ => (),
             }
-            return true;
         }
+        return input_iter.clone().count() == 0; // Ensure the entire input is consumed
     }
+
+    // If pattern doesn't start with `^`, match anywhere in the input
+    'input_iter: for i in 0..input_line.len() {
+        let input = &input_line[i..];
+        let mut input_iter = input.chars();
+        for pattern in patterns.iter() {
+            match pattern {
+                Pattern::Literal(l) => {
+                    if !match_literal(&mut input_iter, *l) {
+                        continue 'input_iter;
+                    }
+                }
+                Pattern::Digit => {
+                    if !match_digit(&mut input_iter) {
+                        continue 'input_iter;
+                    }
+                }
+                Pattern::Alphanumeric => {
+                    if !match_alphanumeric(&mut input_iter) {
+                        continue 'input_iter;
+                    }
+                }
+                Pattern::Group(positive, group) => {
+                    if match_group(&mut input_iter, group) != *positive {
+                        continue 'input_iter;
+                    }
+                }
+                _ => (),
+            }
+        }
+        return true;
+    }
+
     false
 }
 
