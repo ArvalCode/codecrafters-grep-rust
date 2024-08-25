@@ -9,12 +9,12 @@ fn match_pattern(input_line: &str, pattern: &str) -> bool {
         return input_line.contains(|c: char| c.is_digit(10));
     } else if pattern == "\\w" {
         return input_line.contains(|c: char | c.is_alphanumeric());
+    } if pattern.starts_with("[^") && pattern.ends_with(']') {
+        let exclude_chars: HashSet<u8> = pattern[2..pattern.len()-1].bytes().collect();
+        input_line.bytes().all(|val| !exclude_chars.contains(&val))
     } else if pattern.starts_with('[') && pattern.ends_with(']') {
         let mut new_pattern = pattern.trim_matches('[').trim_matches(']').bytes();
         return input_line.bytes().any(|val| new_pattern.any(|p| val == p));
-    } else if pattern.starts_with("[^") && pattern.ends_with(']') {
-        let mut new_pattern = pattern.trim_matches("[^").trim_matches(']').bytes();
-        return input_line.bytes().all(|val| !new_pattern.any(|p| val == p));
     } else {
         panic!("Unhandled pattern: {}", pattern)
     }
