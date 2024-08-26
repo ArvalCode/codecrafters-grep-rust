@@ -10,7 +10,6 @@ enum Pattern {
     Alphanumeric,
     Group(bool, String),
     StartOfLine,
-    EndOfLine,
 }
 
 fn match_literal(chars: &mut Chars, literal: char) -> bool {
@@ -40,12 +39,13 @@ fn match_pattern(input_line: &str, pattern: &str) -> bool {
     let patterns = build_patterns(pattern);
     let input_line = input_line.trim_matches('\n');
 
+    // Check if the pattern starts with the `^` anchor
     let starts_with_anchor = patterns.first() == Some(&Pattern::StartOfLine);
-    let ends_with_anchor = patterns.last() == Some(&Pattern::EndOfLine);
 
-    let mut input_iter = input_line.chars();
-
+    let mut iter = input_line.chars();
+    
     if starts_with_anchor {
+        // If pattern starts with `^`, match the input from the beginning
         let input = &input_line[..];
         let mut input_iter = input.chars();
         for pattern in patterns.iter().skip(1) {
@@ -73,53 +73,10 @@ fn match_pattern(input_line: &str, pattern: &str) -> bool {
                 _ => (),
             }
         }
-        if ends_with_anchor {
-            return input_iter.clone().count() == 0; // Ensure the entire input is consumed
-        } else {
-            return true;
-        }
+        return input_iter.clone().count() == 0; // Ensure the entire input is consumed
     }
 
-    if ends_with_anchor {
-        let pattern_length: usize = patterns
-            .iter()
-            .filter(|p| !matches!(p, Pattern::StartOfLine | Pattern::EndOfLine))
-            .count();
-        if input_line.len() < pattern_length {
-            return false;
-        }
-
-        let input = &input_line[(input_line.len() - pattern_length)..];
-        let mut input_iter = input.chars();
-        for pattern in patterns.iter().filter(|p| !matches!(p, Pattern::StartOfLine | Pattern::EndOfLine)) {
-            match pattern {
-                Pattern::Literal(l) => {
-                    if !match_literal(&mut input_iter, *l) {
-                        return false;
-                    }
-                }
-                Pattern::Digit => {
-                    if !match_digit(&mut input_iter) {
-                        return false;
-                    }
-                }
-                Pattern::Alphanumeric => {
-                    if !match_alphanumeric(&mut input_iter) {
-                        return false;
-                    }
-                }
-                Pattern::Group(positive, group) => {
-                    if match_group(&mut input_iter, group) != *positive {
-                        return false;
-                    }
-                }
-                _ => (),
-            }
-        }
-        return input_iter.clone().count() == 0;
-    }
-
-    // If no anchors are present, match anywhere in the input
+    // If pattern doesn't start with `^`, match anywhere in the input
     'input_iter: for i in 0..input_line.len() {
         let input = &input_line[i..];
         let mut input_iter = input.chars();
@@ -154,6 +111,28 @@ fn match_pattern(input_line: &str, pattern: &str) -> bool {
     false
 }
 
+fn build_group_pattern(iter: &mut Chars) -> (bool, String) {
+    let mut group = String::new();
+    let mut positive = true;
+    if iter.clone().next().is_some_and(|c| c == '^') {
+        positive = false;
+        iter.next();
+    }
+    loop {
+        let member = iter.next();
+        if member.is_none() {
+            panic!("Incomplete character group");
+        }
+        let member = member.unwrap();
+        if member != ']' {
+            group.push(member);
+            continue;
+        }
+        break;
+    }
+    (positive, group)
+}
+
 fn build_patterns(pattern: &str) -> Vec<Pattern> {
     let mut iter = pattern.chars();
     let mut patterns = Vec::new();
@@ -180,7 +159,6 @@ fn build_patterns(pattern: &str) -> Vec<Pattern> {
                 patterns.push(Pattern::Group(positive, group));
             }
             '^' => patterns.push(Pattern::StartOfLine),
-            '$' => patterns.push(Pattern::EndOfLine),
             l => patterns.push(Pattern::Literal(l)),
         }
     }
